@@ -4,7 +4,9 @@ import { monitor } from "@colyseus/monitor";
 /**
  * Import your Room files
  */
-import { MyRoom } from "./rooms/MyRoom";
+import { PlayerRoom } from "./rooms/PlayerRoom";
+import {matchMaker, RedisPresence} from "colyseus";
+import {AudienceRoom} from "./rooms/AudienceRoom";
 
 export default Arena({
     getId: () => "Your Colyseus App",
@@ -13,9 +15,12 @@ export default Arena({
         /**
          * Define your room handlers:
          */
-        gameServer.define('my_room', MyRoom);
+        gameServer.define('player_room', PlayerRoom);
+        gameServer.define('audience_room', AudienceRoom);
 
     },
+
+    options:{presence: new RedisPresence()},
 
     initializeExpress: (app) => {
         /**
@@ -38,5 +43,16 @@ export default Arena({
         /**
          * Before before gameServer.listen() is called.
          */
+
+        let finished = 0;
+        matchMaker.create("player_room").then((res)=>{
+            matchMaker.create("audience_room").then((res2)=>{
+                console.log(res.room.roomId, res2.room.roomId);
+                matchMaker.remoteRoomCall();
+            })
+        });
+
+
+
     }
 });
