@@ -1,17 +1,20 @@
 import { Room, Client } from "colyseus";
-import { MyRoomState } from "./schema/MyRoomState";
+import {MyRoomState, Player} from "./schema/MyRoomState";
+import {MapSchema, Schema} from "@colyseus/schema";
 
 export class PlayerRoom extends Room<MyRoomState> {
 
   onCreate (options: any) {
-    this.setState(new MyRoomState());
+    let s = new MyRoomState();
+    this.setState(s);
     this.autoDispose = false;
-
+    this.presence.publish("Movement", {"test":1});
+    setTimeout(() => {
+      this.presence.publish("Movement", 22)
+    }, 1000);
 
     this.onMessage("type", (client, message) => {
-      //
-      // handle "type" message
-      //
+      this.presence.publish("Movement", this.state);
     });
 
   }
@@ -26,11 +29,6 @@ export class PlayerRoom extends Room<MyRoomState> {
 
   onDispose() {
     console.log("room", this.roomId, "disposing...");
-  }
-
-  setAudience()
-  {
-
   }
 
 }

@@ -48,7 +48,7 @@ export default Arena({
         matchMaker.create("player_room").then((res)=>{
             matchMaker.create("audience_room").then((res2)=>{
                 console.log(res.room.roomId, res2.room.roomId);
-                matchMaker.remoteRoomCall();
+                // matchMaker.remoteRoomCall();
             })
         });
 

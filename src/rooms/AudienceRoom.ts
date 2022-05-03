@@ -4,8 +4,9 @@ import { MyRoomState } from "./schema/MyRoomState";
 export class AudienceRoom extends Room<MyRoomState> {
 
   onCreate (options: any) {
-    this.setState(new MyRoomState());
+    // this.setState(new MyRoomState());
     this.autoDispose = false;
+    this.presence.subscribe("Movement", this.onMovement);
 
     this.onMessage("type", (client, message) => {
       //
@@ -13,6 +14,12 @@ export class AudienceRoom extends Room<MyRoomState> {
       //
     });
 
+  }
+
+  onMovement(data:any)
+  {
+    this.state = data;
+    console.log(data);
   }
 
   onJoin (client: Client, options: any) {
