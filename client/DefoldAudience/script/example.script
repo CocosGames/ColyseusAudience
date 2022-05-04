@@ -1,0 +1,83 @@
+local Colyseus = require "colyseus.client"
+
+local client
+local xroom
+local players = {}
+
+function init(self)
+
+    client = Colyseus.new("ws://localhost:2567")
+    --while (not client) do end
+end
+
+function final(self)
+    -- Add finalization code here
+    -- Remove this function if not needed
+    msg.post(".", "release_input_focus")
+end
+
+function update(self, dt)
+   -- Add update code here
+   -- Remove this function if not needed
+end
+
+function on_message(self, message_id, message, sender)
+    print(message_id)
+    pprint(message)
+    if message_id == hash("selected") then
+        if message.role == "player" then
+            joinRoom("player")
+        else
+            joinRoom("audience")
+        end
+    end
+
+end
+
+function joinRoom(whichOne)
+    if not client then return end
+    client:join_or_create(whichOne.."_room", function(err, room)
+      if (err) then
+        print("JOIN ERROR: " .. err)
+        return
+      end
+        xroom = room;
+       room:on("statechange", function(state)
+           updatePlayers(state.players.items)
+       end
+    )
+        room:on_message("update", function(message)
+            if message and message.players then
+                updatePlayers(message.players)
+            end
+        end)
+      print("successfully joined '" .. room.name .. "'")
+        msg.post(".", "acquire_input_focus")
+    end)
+end
+
+function updatePlayers(data)
+    go.delete_all(players)
+    for k, v in pairs(data) do
+        if not players[key] then
+            local p = vmath.vector3()
+            p.x = v.x;
+            p.y = v.y
+            players[k] = factory.create("#factory", p)
+            local id = tostring(players[k])
+            id = string.sub(id,8,string.len(id)-1)
+            label.set_text(id.."#playerName", k)
+        end
+    end
+end
+
+function on_input(self, action_id, action)
+    if action_id==hash("touch") and client and xroom then
+        xroom:send("move", { x=action.x, y=action.y })
+    end
+end
+
+function on_reload(self)
+   -- Add reload-handling code here
+   -- Remove this function if not needed
+end
