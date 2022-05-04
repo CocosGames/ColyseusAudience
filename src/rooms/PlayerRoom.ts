@@ -8,23 +8,29 @@ export class PlayerRoom extends Room<MyRoomState> {
     let s = new MyRoomState();
     this.setState(s);
     this.autoDispose = false;
-    this.presence.publish("Movement", {"test":1});
-    setTimeout(() => {
-      this.presence.publish("Movement", 22)
-    }, 1000);
 
-    this.onMessage("type", (client, message) => {
-      this.presence.publish("Movement", this.state);
+    this.onMessage("move", (client, message) => {
+      let player = this.state.players.get(client.id);
+      player.x = message.x;
+      player.y = message.y;
+      this.state.players.set(client.id, player);
+      this.presence.publish("update", this.state);
     });
-
   }
 
   onJoin (client: Client, options: any) {
     console.log(client.sessionId, "joined!");
+    let player = new Player()
+    player.x = Math.random()*700+100;
+    player.y = Math.random()*400+100;
+    this.state.players.set(client.id, player);
+    this.presence.publish("update", this.state);
   }
 
   onLeave (client: Client, consented: boolean) {
     console.log(client.sessionId, "left!");
+    this.state.players.delete(client.id);
+    this.presence.publish("update", this.state);
   }
 
   onDispose() {

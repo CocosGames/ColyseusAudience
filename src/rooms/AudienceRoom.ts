@@ -3,27 +3,20 @@ import { MyRoomState } from "./schema/MyRoomState";
 
 export class AudienceRoom extends Room<MyRoomState> {
 
+  data:any = {};
   onCreate (options: any) {
-    // this.setState(new MyRoomState());
     this.autoDispose = false;
-    this.presence.subscribe("Movement", this.onMovement);
-
-    this.onMessage("type", (client, message) => {
-      //
-      // handle "type" message
-      //
+    this.presence.subscribe("update", (d:any)=>{
+      console.log(d);
+      this.data = d;
+      this.broadcast("update", this.data);
     });
 
   }
 
-  onMovement(data:any)
-  {
-    this.state = data;
-    console.log(data);
-  }
-
   onJoin (client: Client, options: any) {
     console.log(client.sessionId, "joined!");
+    this.broadcast("update", this.data);
   }
 
   onLeave (client: Client, consented: boolean) {
